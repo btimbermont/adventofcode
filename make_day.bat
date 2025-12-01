@@ -1,5 +1,4 @@
-set "yearNumber=%~1"
-set "dayNumber=%~2"
+set "dayNumber=%~1"
 set "folderName=day%dayNumber%"
 mkdir "%folderName%"
 set "dayFile=%folderName%\day%dayNumber%.py"
