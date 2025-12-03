@@ -5,4 +5,8 @@ set "dayFile=%folderName%\day%dayNumber%.py"
 type nul > "%dayFile%"
 set "initFile=%folderName%\__init__.py"
 type nul > "%initFile%"
+set "input=%folderName%\input.txt"
+type nul > "%input%"
+set "input=%folderName%\test_input.txt"
+type nul > "%input%"
 git add *
