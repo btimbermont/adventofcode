@@ -12,13 +12,20 @@ Route = List[Point]
 infinity = 1000000000000000000000000000000000000000000000
 
 
-def get_neighbors(point: Point) -> List[Point]:
+def get_neighbors(point: Point, include_diagonals:bool=False) -> List[Point]:
     x, y = point
     up = x, y - 1
     right = x + 1, y
     down = x, y + 1
     left = x - 1, y
-    return [up, right, down, left]
+    neighbors = [up, right, down, left]
+    if include_diagonals:
+        tl = x-1, y-1
+        tr = x+1, y-1
+        bl = x-1, y+1
+        br = x+1, y+1
+        neighbors += [tl, tr, bl, br]
+    return neighbors
 
 
 def manhattan_dist(a: Point, b: Point) -> int:
@@ -91,13 +98,8 @@ class String2dMap:
     def lookup_content(self, cell: str) -> List[Point]:
         return list(self.lookup.get(cell))
 
-    def get_neighbors(self, point: Point, filter_outside: bool = True) -> List[Point]:
-        x, y = point
-        up = x, y - 1
-        down = x, y + 1
-        left = x - 1, y
-        right = x + 1, y
-        neighbors = [(x, y) for x, y in [up, right, down, left] if
+    def get_neighbors(self, point: Point, filter_outside: bool = True, include_diagonals: bool = False) -> List[Point]:
+        neighbors = [(x, y) for x, y in get_neighbors(point, include_diagonals) if
                      not filter_outside or (0 <= y < self.max_y and 0 <= x < self.max_x)]
         return neighbors
 
@@ -183,4 +185,5 @@ class Vector(Tuple[int, int]):
 
 
 if __name__ == '__main__':
-    print(manhattan_dist((0,0), (1,0)))
+    print(get_neighbors((0,0)))
+    print(get_neighbors((0,0), True))
