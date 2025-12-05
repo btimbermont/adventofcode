@@ -31,19 +31,13 @@ if __name__ == '__main__':
 
     print('part 2')
     fresh_ranges.sort(key=lambda x: x[0])
-    max_id = -1000
+    max_id = -1
     fresh_ids = 0
-    for range in fresh_ranges:
-        if max_id < range[0]:
-            fresh_ids += range[1] - range[0] + 1
-            max_id = range[1]
-        elif max_id > range[1]:
-            continue
-        elif in_range(max_id, range):
-            fresh_ids += range[1] - max_id
-            max_id = range[1]
-        else:
-            raise ValueError(f'something is off with tyour range checks! maxId={max_id} range={range}')
-        print(f'After range {range}: max_id {max_id} f_ids {fresh_ids}')
+    for id_range in fresh_ranges:
+        if max_id >= id_range[0]:
+            if max_id >= id_range[1]:
+                continue
+            id_range = (max_id + 1, id_range[1])
+        fresh_ids += id_range[1] - id_range[0] + 1
+        max_id = id_range[1]
     print(fresh_ids)
-
