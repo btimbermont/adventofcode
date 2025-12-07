@@ -1,33 +1,36 @@
 from typing import List, Tuple
 
-
-def apply_beams(input: List[str]) -> Tuple[List[str], int]:
+def apply_beams(input: List[str]) -> Tuple[List[str], int, List[int]]:
     result = []
-    current_beams = set()
     split_count = 0
+    timeline_counts = None
     for line in input:
-        if not current_beams:
-            current_beams.add(line.index('S'))
+        if timeline_counts is None:
+            timeline_counts = [0] * len(line)
+            timeline_counts[line.index('S')] = 1
             result.append(line)
             continue
-        curr = list(current_beams)
-        for beam in curr:
-            if line[beam] == '^':
+        for i in [i for i, char in enumerate(line) if char == '^']:
+            if timeline_counts[i] > 0:
                 split_count += 1
-                current_beams.remove(beam)
-                current_beams.add(beam - 1)
-                current_beams.add(beam + 1)
+                timeline_counts[i - 1] += timeline_counts[i]
+                timeline_counts[i + 1] += timeline_counts[i]
+                timeline_counts[i] = 0
         new_line = list(line)
-        for beam in current_beams:
-            new_line[beam] = '|'
+        for i, count in enumerate(timeline_counts):
+            if count > 0:
+                new_line[i] = '|'
         result.append(''.join(new_line))
-    return result, split_count
-
+    return result, split_count, timeline_counts
 
 if __name__ == '__main__':
     with open('input.txt', 'r') as file:
         input = [l.strip() for l in file.readlines()]
-    print('part 1')
-    result, split_count = apply_beams(input)
+
+    result, split_count, timeline_counts = apply_beams(input)
     print('\n'.join(result))
-    print(split_count)
+
+    print('part 1')
+    print(f'splits: {split_count}')
+    print('part 2')
+    print(f'timeline count: {sum(timeline_counts)}\ttimeline counts: {timeline_counts}')
