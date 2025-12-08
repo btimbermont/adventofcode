@@ -1,49 +1,47 @@
-from advent_utils.three_d_utils import get_nearest_neighbor_map
+import math
+from itertools import combinations
+
+from advent_utils.three_d_utils import euclidean_dist
 
 if __name__ == '__main__':
     points = []
-    with open('test_input.txt', 'r') as file:
+    with open('input.txt', 'r') as file:
         for line in file:
             point = tuple([int(a) for a in line.strip().split(',')])
             points.append(point)
 
     print('part 1')
-    connections = 10
-
-    nearest_neighbor_map = get_nearest_neighbor_map(points)
-    distance_map = dict()
-    for key, value in nearest_neighbor_map.items():
-        point_a = key
-        point_b, dist = value
-        distance_map[dist] = point_a, point_b
-    shortest_distances = list(sorted(distance_map.keys()))
+    connections = 1000
+    print('Calculating all distances...')
+    full_distance_list = []
+    for a, b in combinations(points, 2):
+        full_distance_list.append((a, b, euclidean_dist(a, b)))
+    full_distance_list.sort(key=lambda x: x[2])
+    print('done')
     connected_junctions = dict()
-    for d in shortest_distances:
-        junction_a, junction_b = distance_map[d]
-        circuit_a, circuit_b = None, None
+    for junction_a, junction_b, dist in full_distance_list:
+        circuit_a = connected_junctions.get(junction_a)
+        circuit_b = connected_junctions.get(junction_b)
 
-        junction_a_circuit = connected_junctions.get(junction_a)
-        junction_b_circuit = connected_junctions.get(junction_b)
-
-        if junction_a_circuit is None and junction_b_circuit is None:
+        if circuit_a is None and circuit_b is None:
             new_circuit = [junction_a, junction_b]
             connected_junctions[junction_a] = new_circuit
             connected_junctions[junction_b] = new_circuit
-        elif junction_a_circuit is None:
-            junction_b_circuit.append(junction_a)
-            connected_junctions[junction_a] = junction_b_circuit
-        elif junction_b_circuit is None:
-            junction_a_circuit.append(junction_b)
-            connected_junctions[junction_b] = junction_a_circuit
-        elif junction_a_circuit == junction_b_circuit:
-            continue
-        else:
-            # merge two circuits
-            junction_a_circuit.append(junction_b_circuit)
-            for j in junction_b_circuit:
-                connected_junctions[j] = junction_a_circuit
-        connections -=1
+        elif circuit_a is None:
+            circuit_b.append(junction_a)
+            connected_junctions[junction_a] = circuit_b
+        elif circuit_b is None:
+            circuit_a.append(junction_b)
+            connected_junctions[junction_b] = circuit_a
+        elif circuit_a != circuit_b:
+            circuit_a.extend(circuit_b)
+            for junction in circuit_b:
+                connected_junctions[junction] = circuit_a
+        connections -= 1
         if connections == 0:
             break
-    for k,v in connected_junctions.items():
-        print(f'{k}:\t{v}')  # still wrong :(
+    all_circuits = list(set([tuple(circuit) for circuit in connected_junctions.values()]))
+    all_circuits.sort(key = lambda c: -len(c))
+    circuit_sizes = [len(c) for c in all_circuits]
+    print(circuit_sizes)
+    print(math.prod(circuit_sizes[:3]))
