@@ -1,5 +1,3 @@
-from typing import List, Set
-
 from advent_utils.three_d_utils import get_nearest_neighbor_map
 
 if __name__ == '__main__':
@@ -18,20 +16,34 @@ if __name__ == '__main__':
         point_a = key
         point_b, dist = value
         distance_map[dist] = point_a, point_b
-    shortest_distances = list(sorted(distance_map.keys()))[:connections]
-    circuits: List[Set] = []
+    shortest_distances = list(sorted(distance_map.keys()))
+    connected_junctions = dict()
     for d in shortest_distances:
         junction_a, junction_b = distance_map[d]
-        existing_circuit = None
-        for circuit in circuits:
-            if junction_a in circuit or junction_b in circuit:
-                existing_circuit = circuit
-        if existing_circuit:
-            existing_circuit.add(junction_a)
-            existing_circuit.add(junction_b)
+        circuit_a, circuit_b = None, None
+
+        junction_a_circuit = connected_junctions.get(junction_a)
+        junction_b_circuit = connected_junctions.get(junction_b)
+
+        if junction_a_circuit is None and junction_b_circuit is None:
+            new_circuit = [junction_a, junction_b]
+            connected_junctions[junction_a] = new_circuit
+            connected_junctions[junction_b] = new_circuit
+        elif junction_a_circuit is None:
+            junction_b_circuit.append(junction_a)
+            connected_junctions[junction_a] = junction_b_circuit
+        elif junction_b_circuit is None:
+            junction_a_circuit.append(junction_b)
+            connected_junctions[junction_b] = junction_a_circuit
+        elif junction_a_circuit == junction_b_circuit:
+            continue
         else:
-            new_circuit = set()
-            new_circuit.add(junction_a)
-            new_circuit.add(junction_b)
-            circuits.append(new_circuit)
-    print([len(c) for c in circuits])  # still wrong
+            # merge two circuits
+            junction_a_circuit.append(junction_b_circuit)
+            for j in junction_b_circuit:
+                connected_junctions[j] = junction_a_circuit
+        connections -=1
+        if connections == 0:
+            break
+    for k,v in connected_junctions.items():
+        print(f'{k}:\t{v}')  # still wrong :(
