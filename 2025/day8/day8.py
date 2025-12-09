@@ -1,7 +1,7 @@
 import math
 from itertools import combinations
 
-from advent_utils.three_d_utils import euclidean_dist
+from advent_utils.three_d_utils import euclidean_dist, get_full_distance_list
 
 if __name__ == '__main__':
     points = []
@@ -13,11 +13,7 @@ if __name__ == '__main__':
     print('part 1')
     connections = 1000
     print('Calculating all distances...')
-    full_distance_list = []
-    for a, b in combinations(points, 2):
-        full_distance_list.append((a, b, euclidean_dist(a, b)))
-    full_distance_list.sort(key=lambda x: x[2])
-    print('done')
+    full_distance_list = get_full_distance_list(points)
     connected_junctions = dict()
     for junction_a, junction_b, dist in full_distance_list:
         circuit_a = connected_junctions.get(junction_a)
