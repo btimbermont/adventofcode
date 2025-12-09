@@ -12,7 +12,7 @@ Route = List[Point]
 infinity = 1000000000000000000000000000000000000000000000
 
 
-def get_neighbors(point: Point, include_diagonals:bool=False) -> List[Point]:
+def get_neighbors(point: Point, include_diagonals: bool = False) -> List[Point]:
     x, y = point
     up = x, y - 1
     right = x + 1, y
@@ -20,12 +20,20 @@ def get_neighbors(point: Point, include_diagonals:bool=False) -> List[Point]:
     left = x - 1, y
     neighbors = [up, right, down, left]
     if include_diagonals:
-        tl = x-1, y-1
-        tr = x+1, y-1
-        bl = x-1, y+1
-        br = x+1, y+1
+        tl = x - 1, y - 1
+        tr = x + 1, y - 1
+        bl = x - 1, y + 1
+        br = x + 1, y + 1
         neighbors += [tl, tr, bl, br]
     return neighbors
+
+
+def get_bounds(points: List[Point], padding: int = 1) -> Tuple[Point, Point]:
+    min_x = min([x for x, y in points])
+    max_x = max([x for x, y in points])
+    min_y = min([y for x, y in points])
+    max_y = max([y for x, y in points])
+    return (min_x - 1, min_y - 1), (max_x + 1, max_y + 1)
 
 
 def manhattan_dist(a: Point, b: Point) -> int:
@@ -76,7 +84,7 @@ class String2dMap:
                 self.lookup[content] = points
 
     def copy(self):
-        return String2dMap(input = str(self), wall_characters=self.wall_characters)
+        return String2dMap(input=str(self), wall_characters=self.wall_characters)
 
     def get_cell(self, point: Point) -> Optional[str]:
         x, y = point
@@ -163,6 +171,20 @@ class String2dMap:
         return "\n".join(["".join(line) for line in output])
 
 
+class SparsePointMap(String2dMap):
+    def __init__(self, points: Dict[Point, str], empty_cell: str = '.'):
+        top_left, bottom_right = get_bounds(list(points.keys()))
+        min_x, min_y = top_left
+        max_x, max_y = bottom_right
+        lines = ''
+        for y in range(min_y, max_y + 1):
+            for x in range(min_x, max_x + 1):
+                lines += points.get((x, y), empty_cell)
+            lines += '\n'
+        wall_chars = ''.join(set(points.values()))
+        super().__init__(input=lines, wall_characters=wall_chars)
+
+
 class Vector(Tuple[int, int]):
     def __new__(cls, x: int, y: int):
         return tuple.__new__(Vector, (x, y))
@@ -182,8 +204,3 @@ class Vector(Tuple[int, int]):
 
     def scale(self, scale: int) -> 'Vector':
         return Vector(scale * self.x, scale * self.y)
-
-
-if __name__ == '__main__':
-    print(get_neighbors((0,0)))
-    print(get_neighbors((0,0), True))
