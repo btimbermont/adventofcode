@@ -15,3 +15,13 @@ if __name__ == '__main__':
     pairs = [(a,b, area_between(a,b)) for a,b in combinations(points, 2)]
     max_area = max(pairs, key=lambda i:i[2])
     print(max_area)
+
+    print('part 2')
+    red_tiles = points
+    green_tiles = []
+    for i in range(len(red_tiles)):
+        tile1, tile2 = red_tiles[i-1], red_tiles[i]
+        if tile1[0] == tile2[0]:
+            ...
+        elif tile1[0] == tile2[0]:
+            ...
