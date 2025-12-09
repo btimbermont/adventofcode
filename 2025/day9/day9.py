@@ -18,6 +18,7 @@ if __name__ == '__main__':
     print(max_area)
 
     print('part 2')
+    # EDIT: USE RAYCASTING ALGORITHM!
     red_tiles = points
     green_tiles = []
     for i in range(len(red_tiles)):
