@@ -12,6 +12,47 @@ Route = List[Point]
 infinity = 1000000000000000000000000000000000000000000000
 
 
+def point_in_shape(shape_corners: List[Point], point: Point) -> bool:
+    inside = False
+    for i in range(len(shape_corners)):
+        p1 = shape_corners[i - 1]
+        p2 = shape_corners[i]
+
+        # only check vertical edges
+        if p1[0] == p2[0]:
+            point_is_within_y_bounds = min(p1[1], p2[1]) <= point[1] <= max(p1[1], p2[1])
+            if point[0] == p1[0] and point_is_within_y_bounds:
+                return True  # point is on an edge = inside shape
+            if point[0] < p1[0] and point_is_within_y_bounds:
+                inside = not inside
+        elif p1[1] == p2[1]:
+            # horizontal edge: ignore, except if point is on it
+            on_same_y = point[1] == p1[1]
+            within_x_bounds = min(p1[0], p2[0]) <= point[0] <= max(p1[0], p2[0])
+            if on_same_y and within_x_bounds:
+                return True  # point is on an edge = inside shape
+    return inside
+
+
+class Rectangle:
+    def __init__(self, point1: Point, point2: Point):
+        self.original_points = [point1, point2]
+        self.min_x, self.max_x = min(point1[0], point2[0]), max(point1[0], point2[0])
+        self.min_y, self.max_y = min(point1[1], point2[1]), max(point1[1], point2[1])
+        self.area = (self.max_x - self.min_x + 1) * (self.max_y - self.min_y + 1)
+        self.shape = [(self.min_x, self.min_y),
+                      (self.max_x, self.min_y),
+                      (self.max_y, self.max_x),
+                      (self.max_y, self.min_x)]
+
+    def overlaps(self, other: 'Rectangle') -> bool:
+        return not (other.max_x <= self.min_x or self.max_x <= other.min_x or
+            other.max_y <= self.min_y or self.max_y <= other.min_y)
+
+    def __str__(self):
+        return f'Rectangle({(self.min_x, self.min_y)},{(self.max_x, self.max_y)}, area = {self.area})'
+
+
 def get_neighbors(point: Point, include_diagonals: bool = False) -> List[Point]:
     x, y = point
     up = x, y - 1
