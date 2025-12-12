@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 
@@ -7,12 +8,15 @@ class Shape:
             raise ValueError(f'Shape needs a strictly positive length and width: {outline}')
         self.height = len(outline)
         self.width = len(outline[0])
+        self.area = 0
         for row in outline:
             if len(row) != self.width:
                 raise ValueError(f'Not all rows are the same length in shape {outline}')
             for cell in row:
                 if cell not in '#.':
                     raise ValueError(f'invalid cell "{cell}" in shape {outline}')
+                if cell == '#':
+                    self.area += 1
         self.outline = [list(row) for row in outline]
 
     def rotate(self) -> 'Shape':
@@ -59,14 +63,56 @@ class Grid:
                         return False
         return True
 
+    def fits(self, shapes: List[Shape], shape_counts: List[int]):
+        # if number of # is larger than grid, no use in trying to fit
+        shapes_inner_area = 0
+        for i in range(len(shapes)):
+            inner_area = shapes[i].area
+            shapes_inner_area += inner_area * shape_counts[i]
+        if shapes_inner_area > self.width * self.height:
+            print('Even with perfect packing these shapes won\'t fit!')
+            return False
+        # each shape is 3x3, if each shape has its own 3x3 square, no need to pack
+        shapes_x, shapes_y = self.width // 3, self.height // 3
+        total_shapes = sum(shape_counts)
+        if total_shapes <= shapes_x * shapes_y:
+            print('No need to pack, these shapes will work!')
+            return True
+        print(f'Easy approaches don\'t work, you need to implement packing...')
+        return None
+
 
 if __name__ == '__main__':
-    g = Grid(20, 3)
-    print(g)
-    s = Shape(['###.#', '..###'])
-    print()
-    g.place_shape(s.rotate().rotate(), 0, 0, 'A')
-    print(g)
-    print()
-    g.place_shape(s, 5, 1, 'B')
-    print(g)
+    reading_shape = False
+    shapes = []
+    grids_and_shapes = []
+    with open('input.txt', 'r') as file:
+        for line in file:
+            if re.match(r'\d:', line):
+                reading_shape = True
+                shape_lines = []
+            elif reading_shape and line.strip():
+                shape_lines.append(line.strip())
+            elif reading_shape and not line.strip():
+                shapes.append(Shape(shape_lines))
+                reading_shape = False
+                shape_lines = []
+            elif re.match(r'\d+x\d+:.*', line):
+                grid, shape_counts = line.strip().split(':')
+                w, h = grid.split('x')
+                grid = Grid(int(w), int(h))
+                shape_counts = [int(i) for i in shape_counts.split()]
+                grids_and_shapes.append((grid, shape_counts))
+                shape_counts = []
+    print(f'done parsing!')
+
+    known_fits, known_not_fits, unknowns = 0, 0, 0
+    for grid, shape_counts in grids_and_shapes:
+        result = grid.fits(shapes, shape_counts)
+        if result is None:
+            unknowns +=1
+        elif result == True:
+            known_fits +=1
+        elif result == False:
+            known_not_fits +=1
+    print(f'{known_fits} will 100% fit, {known_not_fits} will 100% not, {unknowns} are unknown without packing code')
